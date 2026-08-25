@@ -4,7 +4,7 @@ Sistema full-stack para la administración, registro y control de vehículos bas
 
 ---
 
-## 🛠️ Tecnologías Utilizadas
+## Tecnologías Utilizadas
 
 ### **Backend (Microservicios)**
 - **Lenguaje**: Java 17 (Eclipse Temurin)
