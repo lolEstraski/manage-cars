@@ -20,10 +20,10 @@
               "raw": "{\n  \"nombre\": \"Test User\",\n  \"correo\": \"test@user.com\",\n  \"contrasena\": \"password123\"\n}"
             },
             "url": {
-              "raw": "http://localhost:8080/api/v1/auth/register",
+              "raw": "http://localhost:8085/api/v1/auth/register",
               "protocol": "http",
               "host": ["localhost"],
-              "port": "8080",
+              "port": "8085",
               "path": ["api", "v1", "auth", "register"]
             }
           }
@@ -40,10 +40,10 @@
               "raw": "{\n  \"correo\": \"admin@admin.com\",\n  \"contrasena\": \"admin123\"\n}"
             },
             "url": {
-              "raw": "http://localhost:8080/api/v1/auth/login",
+              "raw": "http://localhost:8085/api/v1/auth/login",
               "protocol": "http",
               "host": ["localhost"],
-              "port": "8080",
+              "port": "8085",
               "path": ["api", "v1", "auth", "login"]
             }
           }

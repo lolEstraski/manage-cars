@@ -30,7 +30,7 @@ services:
   auth-service:
     build: ./backend/auth-service
     ports:
-      - "8080:8080"
+      - "8085:8080"
     environment:
       - DB_URL=jdbc:sqlserver://sqlserver:1433;databaseName=manage_cars;encrypt=true;trustServerCertificate=true
       - DB_DRIVER=com.microsoft.sqlserver.jdbc.SQLServerDriver
