@@ -169,6 +169,39 @@ El repositorio incluye la colección completa para Postman en el archivo:
 
 ---
 
+## 🧪 3. Ejecución de Pruebas Automatizadas (Testing Suite)
+
+La plataforma cuenta con una suite completa de **pruebas unitarias y de integración** para los servicios del backend y frontend:
+
+### **A. Pruebas de `auth-service` (12 Tests - 100% Passing)**
+Valida el registro, login seguro, manejo de roles, excepciones de credenciales y listado de usuarios:
+```bash
+cd backend/auth-service
+# En Windows:
+.\mvnw.cmd test
+# En Linux/Mac:
+./mvnw test
+```
+
+### **B. Pruebas de `car-service` (23 Tests - 100% Passing)**
+Valida el CRUD de vehículos, filtros (placa, marca, modelo, año), conteos, asignación de propietarios por admin, generación de lotes de 10 autos y gestión del catálogo:
+```bash
+cd backend/car-service
+# En Windows:
+.\mvnw.cmd test
+# En Linux/Mac:
+./mvnw test
+```
+
+### **C. Pruebas del Frontend (Angular)**
+Valida los servicios `AuthService`, `AutoService` y `CatalogoService` con `HttpTestingController`:
+```bash
+cd frontend/manage-cars-front
+npm test -- --watch=false --browsers=ChromeHeadless
+```
+
+---
+
 ## 📂 Estructura del Repositorio
 
 ```text
