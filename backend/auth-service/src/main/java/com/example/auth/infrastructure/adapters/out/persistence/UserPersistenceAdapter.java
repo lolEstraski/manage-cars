@@ -36,4 +36,15 @@ public class UserPersistenceAdapter implements UserRepositoryPort {
         return userJpaRepository.findById(id)
                 .map(entity -> modelMapper.map(entity, User.class));
     }
+
+    @Override
+    public java.util.List<User> buscarTodos() {
+        return userJpaRepository.findAll().stream()
+                .map(entity -> {
+                    User u = modelMapper.map(entity, User.class);
+                    u.setContrasena(null);
+                    return u;
+                })
+                .collect(java.util.stream.Collectors.toList());
+    }
 }

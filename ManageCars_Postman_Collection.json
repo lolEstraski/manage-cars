@@ -1,125 +1,655 @@
 {
   "info": {
-    "name": "Manage Cars API",
-    "description": "API requests for Manage Cars Full Stack App",
+    "name": "Manage Cars API - Completa (v2.2.0)",
+    "description": "Colección completa de endpoints para Manage Cars App (Auth Service, Car Service y Catálogo). Incluye scripts automáticos para captura de tokens JWT, asignación de autos por admin, generación de 10 autos por usuario, gestión de catálogo y CRUD completo.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
+  "variable": [
+    {
+      "key": "auth_base_url",
+      "value": "http://localhost:8085/api/v1/auth",
+      "type": "string"
+    },
+    {
+      "key": "car_base_url",
+      "value": "http://localhost:8081/api/v1/autos",
+      "type": "string"
+    },
+    {
+      "key": "catalogo_base_url",
+      "value": "http://localhost:8081/api/v1/catalogo",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "target_auto_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "target_user_id",
+      "value": "2",
+      "type": "string"
+    }
+  ],
   "item": [
     {
-      "name": "Auth Service",
+      "name": "1. Auth Service",
       "item": [
         {
-          "name": "Register User",
+          "name": "1. Registro de Usuario",
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Test User\",\n  \"correo\": \"test@user.com\",\n  \"contrasena\": \"password123\"\n}"
+              "raw": "{\n  \"nombre\": \"Carlos\",\n  \"apellido\": \"Gomez\",\n  \"correo\": \"carlos@test.com\",\n  \"contrasena\": \"password123\"\n}"
             },
             "url": {
-              "raw": "http://localhost:8085/api/v1/auth/register",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "8085",
-              "path": ["api", "v1", "auth", "register"]
-            }
+              "raw": "{{auth_base_url}}/registro",
+              "host": ["{{auth_base_url}}"],
+              "path": ["registro"]
+            },
+            "description": "Registra un nuevo usuario con rol predeterminado ROLE_USER."
           }
         },
         {
-          "name": "Login",
+          "name": "2. Login Administrador (Auto-guarda Token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.token) {",
+                  "    pm.collectionVariables.set('jwt_token', jsonData.token);",
+                  "    console.log('Token JWT de Administrador guardado en {{jwt_token}}');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"correo\": \"admin@admin.com\",\n  \"contrasena\": \"admin123\"\n}"
             },
             "url": {
-              "raw": "http://localhost:8085/api/v1/auth/login",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "8085",
-              "path": ["api", "v1", "auth", "login"]
+              "raw": "{{auth_base_url}}/login",
+              "host": ["{{auth_base_url}}"],
+              "path": ["login"]
+            },
+            "description": "Inicia sesión como Super Administrador y guarda automáticamente el token en {{jwt_token}}."
+          }
+        },
+        {
+          "name": "3. Login Usuario Estándar (Auto-guarda Token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.token) {",
+                  "    pm.collectionVariables.set('jwt_token', jsonData.token);",
+                  "    console.log('Token JWT de Usuario Estándar guardado en {{jwt_token}}');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"carlos@test.com\",\n  \"contrasena\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/login",
+              "host": ["{{auth_base_url}}"],
+              "path": ["login"]
+            },
+            "description": "Inicia sesión como un usuario regular para verificar su garaje personal."
+          }
+        },
+        {
+          "name": "4. Listar Todos los Usuarios (Admin / Sistema)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{auth_base_url}}/usuarios",
+              "host": ["{{auth_base_url}}"],
+              "path": ["usuarios"]
+            },
+            "description": "Obtiene la lista completa de usuarios registrados (ID, nombre, apellido, correo, rol) para asignaciones de vehículos en el administrador."
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Car Service - Gestión de Autos",
+      "item": [
+        {
+          "name": "1. Guardar Auto (Personal)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.id) {",
+                  "    pm.collectionVariables.set('target_auto_id', jsonData.id);",
+                  "    console.log('ID del auto creado guardado en {{target_auto_id}}: ' + jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"marca\": \"Toyota\",\n  \"modelo\": \"Corolla\",\n  \"anio\": \"2024\",\n  \"placa\": \"XYZ-789\",\n  \"color\": \"Rojo\"\n}"
+            },
+            "url": {
+              "raw": "{{car_base_url}}",
+              "host": ["{{car_base_url}}"]
+            },
+            "description": "Registra un auto asignándolo automáticamente al usuario autenticado."
+          }
+        },
+        {
+          "name": "2. Guardar Auto Asignado a Usuario Específico (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.id) {",
+                  "    pm.collectionVariables.set('target_auto_id', jsonData.id);",
+                  "    console.log('Auto asignado creado con ID: ' + jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"marca\": \"Mazda\",\n  \"modelo\": \"CX-5\",\n  \"anio\": \"2024\",\n  \"placa\": \"ADM-901X\",\n  \"color\": \"Azul\",\n  \"userId\": 2\n}"
+            },
+            "url": {
+              "raw": "{{car_base_url}}",
+              "host": ["{{car_base_url}}"]
+            },
+            "description": "Permite al Administrador registrar un vehículo y asignarlo explícitamente a otro usuario (ej. userId = 2)."
+          }
+        },
+        {
+          "name": "3. Generar 10 Autos (Para Usuario Autenticado)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{car_base_url}}/precargar",
+              "host": ["{{car_base_url}}"],
+              "path": ["precargar"]
+            },
+            "description": "Genera 10 autos con marcas y modelos aleatorios del catálogo para el usuario de la sesión actual."
+          }
+        },
+        {
+          "name": "4. Generar 10 Autos Asignados a Usuario Específico (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{car_base_url}}/precargar?targetUserId=2",
+              "host": ["{{car_base_url}}"],
+              "path": ["precargar"],
+              "query": [
+                {
+                  "key": "targetUserId",
+                  "value": "2",
+                  "description": "ID del usuario al que se le crearán los 10 autos"
+                }
+              ]
+            },
+            "description": "Permite al Administrador generar un lote de 10 autos asignados al usuario indicado en targetUserId."
+          }
+        },
+        {
+          "name": "5. Listar Todos los Autos (Admin - Paginado)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{car_base_url}}?page=0&size=20",
+              "host": ["{{car_base_url}}"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Retorna la flota completa de vehículos ordenados del más nuevo al más antiguo (DESC)."
+          }
+        },
+        {
+          "name": "6. Mis Autos (Garaje del Usuario Autenticado)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{car_base_url}}/mis-autos?page=0&size=20",
+              "host": ["{{car_base_url}}"],
+              "path": ["mis-autos"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Retorna únicamente los autos que pertenecen al usuario que envió el token JWT."
+          }
+        },
+        {
+          "name": "7. Obtener Auto por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{car_base_url}}/{{target_auto_id}}",
+              "host": ["{{car_base_url}}"],
+              "path": ["{{target_auto_id}}"]
+            }
+          }
+        },
+        {
+          "name": "8. Actualizar Auto",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"marca\": \"Toyota\",\n  \"modelo\": \"Corolla GR\",\n  \"anio\": \"2025\",\n  \"placa\": \"XYZ-789\",\n  \"color\": \"Negro Metálico\",\n  \"userId\": 2\n}"
+            },
+            "url": {
+              "raw": "{{car_base_url}}/{{target_auto_id}}",
+              "host": ["{{car_base_url}}"],
+              "path": ["{{target_auto_id}}"]
+            },
+            "description": "Actualiza los datos del auto, permitiendo al Admin reasignar el propietario si se especifica userId."
+          }
+        },
+        {
+          "name": "9. Subir Imagen de Auto (Multipart Form)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{car_base_url}}/{{target_auto_id}}/imagen",
+              "host": ["{{car_base_url}}"],
+              "path": ["{{target_auto_id}}", "imagen"]
+            }
+          }
+        },
+        {
+          "name": "10. Eliminar Auto",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{car_base_url}}/{{target_auto_id}}",
+              "host": ["{{car_base_url}}"],
+              "path": ["{{target_auto_id}}"]
+            }
+          }
+        },
+        {
+          "name": "11. Buscar Auto por Placa",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{car_base_url}}/placa/XYZ-789",
+              "host": ["{{car_base_url}}"],
+              "path": ["placa", "XYZ-789"]
+            }
+          }
+        },
+        {
+          "name": "12. Filtrar Autos por Año",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{car_base_url}}/anio/2024?page=0&size=20",
+              "host": ["{{car_base_url}}"],
+              "path": ["anio", "2024"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "13. Filtrar Autos por Marca",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{car_base_url}}/marca/Toyota?page=0&size=20",
+              "host": ["{{car_base_url}}"],
+              "path": ["marca", "Toyota"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "14. Filtrar Autos por Modelo",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{car_base_url}}/modelo/Corolla?page=0&size=20",
+              "host": ["{{car_base_url}}"],
+              "path": ["modelo", "Corolla"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "15. Filtrar Autos por Usuario ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{car_base_url}}/usuario/{{target_user_id}}?page=0&size=20",
+              "host": ["{{car_base_url}}"],
+              "path": ["usuario", "{{target_user_id}}"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "16. Conteo Total de Autos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{car_base_url}}/conteo",
+              "host": ["{{car_base_url}}"],
+              "path": ["conteo"]
+            }
+          }
+        },
+        {
+          "name": "17. Conteo de Autos por Usuario",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{car_base_url}}/conteo/usuario/{{target_user_id}}",
+              "host": ["{{car_base_url}}"],
+              "path": ["conteo", "usuario", "{{target_user_id}}"]
             }
           }
         }
       ]
     },
     {
-      "name": "Car Service",
+      "name": "3. Catálogo (Marcas y Modelos)",
       "item": [
         {
-          "name": "Get Mis Autos",
+          "name": "1. Listar Marcas",
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
             ],
             "url": {
-              "raw": "http://localhost:8081/api/v1/autos/mis-autos",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "8081",
-              "path": ["api", "v1", "autos", "mis-autos"]
-            }
+              "raw": "{{catalogo_base_url}}/marcas",
+              "host": ["{{catalogo_base_url}}"],
+              "path": ["marcas"]
+            },
+            "description": "Retorna todas las marcas registradas en el catálogo."
           }
         },
         {
-          "name": "Create Auto",
+          "name": "2. Crear Marca (Admin)",
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"marca\": \"Toyota\",\n  \"modelo\": \"Corolla\",\n  \"anio\": \"2023\",\n  \"placa\": \"XYZ-987\",\n  \"color\": \"Rojo\"\n}"
+              "raw": "{\n  \"nombre\": \"Porsche\"\n}"
             },
             "url": {
-              "raw": "http://localhost:8081/api/v1/autos",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "8081",
-              "path": ["api", "v1", "autos"]
-            }
+              "raw": "{{catalogo_base_url}}/marcas",
+              "host": ["{{catalogo_base_url}}"],
+              "path": ["marcas"]
+            },
+            "description": "Añade una nueva marca al catálogo (requiere rol de administrador)."
           }
         },
         {
-          "name": "Precargar 10 Autos",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
-            ],
-            "url": {
-              "raw": "http://localhost:8081/api/v1/autos/precargar",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "8081",
-              "path": ["api", "v1", "autos", "precargar"]
-            }
-          }
-        },
-        {
-          "name": "Get Marcas (Catálogo)",
+          "name": "3. Listar Modelos por Marca ID",
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
             ],
             "url": {
-              "raw": "http://localhost:8081/api/v1/catalogo/marcas",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "8081",
-              "path": ["api", "v1", "catalogo", "marcas"]
-            }
+              "raw": "{{catalogo_base_url}}/marcas/1/modelos",
+              "host": ["{{catalogo_base_url}}"],
+              "path": ["marcas", "1", "modelos"]
+            },
+            "description": "Retorna todos los modelos pertenecientes a la marca con ID 1 (ej. Toyota)."
+          }
+        },
+        {
+          "name": "4. Crear Modelo por Marca (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"911 Carrera GTS\",\n  \"marcaId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{catalogo_base_url}}/modelos",
+              "host": ["{{catalogo_base_url}}"],
+              "path": ["modelos"]
+            },
+            "description": "Añade un nuevo modelo asociado a una marca existente. Soporta tanto 'marcaId': 1 como { 'marca': { 'id': 1 } }."
           }
         }
       ]

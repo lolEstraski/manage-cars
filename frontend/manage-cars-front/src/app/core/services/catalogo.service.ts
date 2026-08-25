@@ -33,7 +33,7 @@ export class CatalogoService {
     return this.http.post<Marca>(`${this.apiUrl}/marcas`, marca);
   }
 
-  crearModelo(modelo: {nombre: string, marca: {id: number}}): Observable<ModeloAuto> {
+  crearModelo(modelo: {nombre: string, marca?: {id: number}, marcaId?: number}): Observable<ModeloAuto> {
     return this.http.post<ModeloAuto>(`${this.apiUrl}/modelos`, modelo);
   }
 }

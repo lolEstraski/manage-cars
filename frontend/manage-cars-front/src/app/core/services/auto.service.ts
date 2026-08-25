@@ -37,8 +37,9 @@ export class AutoService {
     return this.http.get<Auto>(`${this.apiUrl}/placa/${placa}`);
   }
 
-  precargarAutos(): Observable<string> {
-    return this.http.post(`${this.apiUrl}/precargar`, {}, { responseType: 'text' });
+  precargarAutos(targetUserId?: number): Observable<string> {
+    const url = targetUserId ? `${this.apiUrl}/precargar?targetUserId=${targetUserId}` : `${this.apiUrl}/precargar`;
+    return this.http.post(url, {}, { responseType: 'text' });
   }
 
   subirImagen(autoId: number, file: File): Observable<Auto> {

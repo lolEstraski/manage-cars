@@ -28,6 +28,12 @@ public class CarService implements CarUseCase {
         existente.setAnio(auto.getAnio());
         existente.setPlaca(auto.getPlaca());
         existente.setColor(auto.getColor());
+        if (auto.getUserId() != null) {
+            existente.setUserId(auto.getUserId());
+        }
+        if (auto.getImagenUrl() != null) {
+            existente.setImagenUrl(auto.getImagenUrl());
+        }
         
         return carRepositoryPort.guardar(existente);
     }

@@ -5,6 +5,7 @@ import com.example.car.domain.ports.out.CarRepositoryPort;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -39,7 +40,7 @@ public class CarPersistenceAdapter implements CarRepositoryPort {
 
     @Override
     public Page<Car> buscarTodos(int page, int size) {
-        return carJpaRepository.findAll(PageRequest.of(page, size))
+        return carJpaRepository.findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id")))
                 .map(e -> modelMapper.map(e, Car.class));
     }
 
@@ -51,25 +52,25 @@ public class CarPersistenceAdapter implements CarRepositoryPort {
 
     @Override
     public Page<Car> buscarPorAnio(String anio, int page, int size) {
-        return carJpaRepository.findByAnio(anio, PageRequest.of(page, size))
+        return carJpaRepository.findByAnio(anio, PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id")))
                 .map(e -> modelMapper.map(e, Car.class));
     }
 
     @Override
     public Page<Car> buscarPorMarca(String marca, int page, int size) {
-        return carJpaRepository.findByMarca(marca, PageRequest.of(page, size))
+        return carJpaRepository.findByMarca(marca, PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id")))
                 .map(e -> modelMapper.map(e, Car.class));
     }
 
     @Override
     public Page<Car> buscarPorModelo(String modelo, int page, int size) {
-        return carJpaRepository.findByModelo(modelo, PageRequest.of(page, size))
+        return carJpaRepository.findByModelo(modelo, PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id")))
                 .map(e -> modelMapper.map(e, Car.class));
     }
 
     @Override
     public Page<Car> buscarPorUsuarioId(Long userId, int page, int size) {
-        return carJpaRepository.findByUserId(userId, PageRequest.of(page, size))
+        return carJpaRepository.findByUserId(userId, PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id")))
                 .map(e -> modelMapper.map(e, Car.class));
     }
 

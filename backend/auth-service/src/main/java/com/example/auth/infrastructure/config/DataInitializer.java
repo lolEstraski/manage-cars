@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 
 @Configuration
 public class DataInitializer {
@@ -35,6 +35,7 @@ public class DataInitializer {
                 adminRole = roleRepositoryPort.buscarPorNombre("ROLE_ADMIN").get();
             }
 
+            // 1. Super Administrador
             if (usuarioRepositoryPort.buscarPorCorreo("admin@admin.com").isEmpty()) {
                 User adminUser = new User();
                 adminUser.setNombre("Super");
@@ -42,8 +43,28 @@ public class DataInitializer {
                 adminUser.setCorreo("admin@admin.com");
                 adminUser.setContrasena(passwordEncoder.encode("admin123"));
                 adminUser.setRol(adminRole);
-                adminUser.setFechaCreacion(new java.util.Date());
+                adminUser.setFechaCreacion(new Date());
                 usuarioRepositoryPort.guardar(adminUser);
+            }
+
+            // 2. Usuarios de Prueba
+            String[][] testUsers = {
+                {"Carlos", "Gomez", "carlos@test.com", "password123"},
+                {"Maria", "Rodriguez", "maria@test.com", "password123"},
+                {"Juan", "Perez", "juan@test.com", "password123"}
+            };
+
+            for (String[] u : testUsers) {
+                if (usuarioRepositoryPort.buscarPorCorreo(u[2]).isEmpty()) {
+                    User user = new User();
+                    user.setNombre(u[0]);
+                    user.setApellido(u[1]);
+                    user.setCorreo(u[2]);
+                    user.setContrasena(passwordEncoder.encode(u[3]));
+                    user.setRol(userRole);
+                    user.setFechaCreacion(new Date());
+                    usuarioRepositoryPort.guardar(user);
+                }
             }
         };
     }

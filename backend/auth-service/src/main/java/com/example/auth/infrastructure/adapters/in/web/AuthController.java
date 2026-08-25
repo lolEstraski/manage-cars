@@ -36,4 +36,9 @@ public class AuthController {
             return ResponseEntity.status(401).body(Map.of("error", e.getMessage()));
         }
     }
+
+    @GetMapping("/usuarios")
+    public ResponseEntity<java.util.List<User>> obtenerUsuarios() {
+        return ResponseEntity.ok(authUseCase.obtenerUsuarios());
+    }
 }

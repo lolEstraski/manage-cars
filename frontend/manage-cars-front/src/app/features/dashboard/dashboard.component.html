@@ -1,202 +1,533 @@
-<nav class="navbar">
-  <div class="navbar-brand">
-    MisAutos App <span *ngIf="isAdmin" class="badge" style="background: var(--danger); font-size: 0.7rem; margin-left: 0.5rem; padding: 2px 6px;">ADMIN</span>
+<!-- Top Navigation -->
+<nav class="main-navbar">
+  <div class="nav-brand-container">
+    <div class="brand-logo-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/>
+        <circle cx="7" cy="17" r="2"/>
+        <path d="M9 17h6"/>
+        <circle cx="17" cy="17" r="2"/>
+      </svg>
+    </div>
+    <span class="brand-title">MisAutos App</span>
+    <span *ngIf="isAdmin" class="admin-pill">ADMINISTRADOR</span>
   </div>
-  <button class="btn btn-secondary" (click)="logout()">Cerrar Sesión</button>
+
+  <div class="nav-actions">
+    <button class="btn-logout" (click)="logout()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+        <polyline points="16 17 21 12 16 7"></polyline>
+        <line x1="21" y1="12" x2="9" y2="12"></line>
+      </svg>
+      Cerrar Sesión
+    </button>
+  </div>
 </nav>
 
-<div class="container animate-fade-in" style="padding-top: 2rem; padding-bottom: 2rem;">
+<div class="dashboard-page-container">
   
-  <!-- Header & Actions -->
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
-    <h2>{{ isAdmin ? 'Panel de Administrador (Todos los Autos)' : 'Dashboard' }}</h2>
-    <div style="display: flex; gap: 1rem;">
-      <button *ngIf="isAdmin" class="btn btn-secondary" (click)="abrirCatalogModal()">Gestionar Catálogo</button>
-      <button class="btn btn-secondary" (click)="precargar10Autos()">Generar 10 Autos</button>
-      <button class="btn btn-primary" (click)="abrirModal()">+ Añadir Auto</button>
+  <!-- Hero Section & Header -->
+  <div class="hero-header">
+    <div class="hero-title-area">
+      <h1 class="hero-main-title">{{ isAdmin ? 'Panel de Administrador (Gestión de Flota)' : 'Mi Garaje Personal' }}</h1>
+      <p class="hero-subtitle">
+        {{ isAdmin ? 'Crea, edita, elimina y genera vehículos asignados a usuarios específicos del sistema' : 'Consulta, registra y administra tus autos personales en tiempo real' }}
+      </p>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="hero-action-buttons">
+      <button *ngIf="isAdmin" class="action-btn btn-catalog" (click)="abrirCatalogModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+        </svg>
+        <span>Gestionar Catálogo</span>
+      </button>
+
+      <button class="action-btn btn-generate" (click)="precargar10Autos()" [disabled]="generatingAutos">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+        </svg>
+        <span>{{ generatingAutos ? 'Generando...' : 'Generar 10 Autos' }}</span>
+      </button>
+
+      <button class="action-btn btn-add-car" (click)="abrirModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        <span>+ Añadir Auto</span>
+      </button>
     </div>
   </div>
 
-  <!-- Search & Filters Bar -->
-  <div class="glass-card" style="margin-bottom: 2rem; display: flex; gap: 1rem; flex-wrap: wrap;">
-    <div style="flex: 1; min-width: 200px;">
-      <label>Buscar por Placa</label>
-      <input type="text" class="input-field" placeholder="Ej. ABC-123" (keyup)="actualizarFiltros($event, 'placa')">
+  <!-- Modern Search & Filter Panel -->
+  <div class="filter-panel-card">
+    <div class="filter-panel-top">
+      <div class="filter-title-group">
+        <div class="filter-icon-circle">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+          </svg>
+        </div>
+        <span class="filter-heading">Filtros de Búsqueda Rápida</span>
+        <span class="filter-counter-badge">{{ autosFiltrados.length }} / {{ autos.length }} Autos</span>
+      </div>
+
+      <button class="btn-reset-filters" (click)="limpiarFiltros()" title="Restablecer todos los filtros">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+          <path d="M3 3v5h5"></path>
+        </svg>
+        Limpiar Filtros
+      </button>
     </div>
-    <div style="flex: 1; min-width: 200px;">
-      <label>Buscar por Modelo</label>
-      <input type="text" class="input-field" placeholder="Ej. Corolla" (keyup)="actualizarFiltros($event, 'modelo')">
-    </div>
-    <div style="flex: 1; min-width: 200px;">
-      <label>Filtrar por Marca</label>
-      <select class="input-field" (change)="actualizarFiltros($event, 'marca')">
-        <option value="">Todas las marcas</option>
-        <option *ngFor="let m of marcas" [value]="m.nombre">{{m.nombre}}</option>
-      </select>
-    </div>
-    <div style="flex: 1; min-width: 200px;">
-      <label>Filtrar por Año</label>
-      <input type="text" class="input-field" placeholder="Ej. 2022" (keyup)="actualizarFiltros($event, 'anio')">
+
+    <!-- Filter Inputs Grid -->
+    <div class="filter-grid-layout">
+      
+      <!-- Filter: Placa -->
+      <div class="filter-field-box">
+        <label class="filter-label">Buscar por Placa</label>
+        <div class="input-with-icon">
+          <span class="input-icon">🔍</span>
+          <input 
+            type="text" 
+            class="custom-input-box" 
+            placeholder="Ej. ABC-123..." 
+            [value]="filtroPlaca"
+            (input)="actualizarFiltros($event, 'placa')"
+          >
+        </div>
+      </div>
+
+      <!-- Filter: Modelo -->
+      <div class="filter-field-box">
+        <label class="filter-label">Buscar por Modelo</label>
+        <div class="input-with-icon">
+          <span class="input-icon">🚗</span>
+          <input 
+            type="text" 
+            class="custom-input-box" 
+            placeholder="Ej. Corolla, M3..." 
+            [value]="filtroModelo"
+            (input)="actualizarFiltros($event, 'modelo')"
+          >
+        </div>
+      </div>
+
+      <!-- Filter: Marca -->
+      <div class="filter-field-box">
+        <label class="filter-label">Filtrar por Marca</label>
+        <div class="input-with-icon">
+          <span class="input-icon">🏷️</span>
+          <select 
+            class="custom-select-box" 
+            [value]="filtroMarca"
+            (change)="actualizarFiltros($event, 'marca')"
+          >
+            <option value="">Todas las marcas</option>
+            <option *ngFor="let m of marcas" [value]="m.nombre">{{ m.nombre }}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Filter: Año -->
+      <div class="filter-field-box">
+        <label class="filter-label">Filtrar por Año</label>
+        <div class="input-with-icon">
+          <span class="input-icon">📅</span>
+          <input 
+            type="text" 
+            class="custom-input-box" 
+            placeholder="Ej. 2024" 
+            [value]="filtroAnio"
+            (input)="actualizarFiltros($event, 'anio')"
+          >
+        </div>
+      </div>
+
+      <!-- Filter: Usuario (Admin Only) -->
+      <div *ngIf="isAdmin" class="filter-field-box admin-highlight-filter">
+        <label class="filter-label" style="color: #93c5fd;">
+          <span>Propietario / Usuario</span>
+          <span class="mini-admin-badge">Admin</span>
+        </label>
+        <div class="input-with-icon">
+          <span class="input-icon">👤</span>
+          <select 
+            class="custom-select-box" 
+            [value]="filtroUsuario"
+            (change)="actualizarFiltros($event, 'usuario')"
+          >
+            <option value="">Todos los usuarios</option>
+            <option *ngFor="let u of usuarios" [value]="u.id">
+              {{ u.nombre }} {{ u.apellido }} (ID: {{ u.id }})
+            </option>
+          </select>
+        </div>
+      </div>
+
     </div>
   </div>
 
-  <div class="glass-card" style="overflow-x: auto;">
-    <table class="data-table" *ngIf="autosFiltrados.length > 0; else noData">
-      <thead>
-        <tr>
-          <th>Imagen</th>
-          <th>Marca</th>
-          <th>Modelo</th>
-          <th>Año</th>
-          <th>Placa</th>
-          <th>Color</th>
-          <th *ngIf="isAdmin">Propietario ID</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let auto of autosFiltrados">
-          <td>
-            <img *ngIf="auto.imagenUrl" [src]="'http://localhost:8081' + auto.imagenUrl" alt="Auto" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;">
-            <div *ngIf="!auto.imagenUrl" style="width: 50px; height: 50px; background: rgba(255,255,255,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: #888;">N/A</div>
-          </td>
-          <td style="font-weight: 500;">{{ auto.marca }}</td>
-          <td>{{ auto.modelo }}</td>
-          <td>{{ auto.anio }}</td>
-          <td><span style="background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 4px; font-family: monospace;">{{ auto.placa }}</span></td>
-          <td>
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <div [style.background]="auto.color" style="width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2);"></div>
-              {{ auto.color }}
-            </div>
-          </td>
-          <td *ngIf="isAdmin">{{ auto.userId }}</td>
-          <td>
-            <button class="btn btn-secondary" style="padding: 0.25rem 0.75rem; font-size: 0.875rem; margin-right: 0.5rem;" (click)="abrirModal(auto)">Editar</button>
-            <button class="btn btn-danger" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;" (click)="eliminarAuto(auto.id)">Eliminar</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    
-    <ng-template #noData>
-      <div style="text-align: center; padding: 3rem 0; color: var(--text-secondary);">
-        <p>No se encontraron autos.</p>
-        <button class="btn btn-primary" style="margin-top: 1rem;" (click)="abrirModal()">Añadir un auto</button>
+  <!-- Cars Data Table Card -->
+  <div class="table-container-card">
+    <div class="table-scroll-area" *ngIf="autosFiltrados.length > 0; else emptyStateView">
+      <table class="styled-cars-table">
+        <thead>
+          <tr>
+            <th style="width: 70px;">Vehículo</th>
+            <th>Marca y Modelo</th>
+            <th>Año</th>
+            <th>Placa</th>
+            <th>Color</th>
+            <th *ngIf="isAdmin">Propietario Asignado</th>
+            <th style="text-align: right;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let auto of autosFiltrados" class="table-row-item">
+            <!-- Thumbnail -->
+            <td>
+              <div class="car-img-wrapper">
+                <img *ngIf="auto.imagenUrl" [src]="'http://localhost:8081' + auto.imagenUrl" alt="Auto">
+                <div *ngIf="!auto.imagenUrl" class="placeholder-car-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/>
+                    <circle cx="7" cy="17" r="2"/>
+                    <path d="M9 17h6"/>
+                    <circle cx="17" cy="17" r="2"/>
+                  </svg>
+                </div>
+              </div>
+            </td>
+
+            <!-- Marca & Modelo -->
+            <td>
+              <div class="brand-model-cell">
+                <span class="brand-badge-tag">{{ auto.marca }}</span>
+                <span class="car-model-name">{{ auto.modelo }}</span>
+              </div>
+            </td>
+
+            <!-- Año -->
+            <td>
+              <span class="year-pill">{{ auto.anio }}</span>
+            </td>
+
+            <!-- Placa -->
+            <td>
+              <div class="license-plate-chip">
+                <span class="plate-letters">{{ auto.placa }}</span>
+              </div>
+            </td>
+
+            <!-- Color -->
+            <td>
+              <div class="color-cell-wrapper">
+                <span class="color-circle-indicator" [style.background-color]="auto.color"></span>
+                <span class="color-text-label">{{ auto.color }}</span>
+              </div>
+            </td>
+
+            <!-- Propietario (Admin) -->
+            <td *ngIf="isAdmin">
+              <div class="owner-user-chip" [title]="getUsuarioEmail(auto.userId)">
+                <div class="owner-avatar">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                </div>
+                <div class="owner-info-text">
+                  <div class="owner-name">{{ getUsuarioLabel(auto.userId) }}</div>
+                  <div class="owner-id-email">ID: {{ auto.userId }} · {{ getUsuarioEmail(auto.userId) }}</div>
+                </div>
+              </div>
+            </td>
+
+            <!-- Acciones -->
+            <td style="text-align: right;">
+              <div class="action-buttons-group">
+                <button class="row-action-btn btn-edit-row" (click)="abrirModal(auto)" title="Editar vehículo">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 20h9"></path>
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                  </svg>
+                  <span>Editar</span>
+                </button>
+                
+                <button class="row-action-btn btn-delete-row" (click)="eliminarAuto(auto.id)" title="Eliminar vehículo">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                  <span>Eliminar</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Empty State -->
+    <ng-template #emptyStateView>
+      <div class="empty-state-card">
+        <div class="empty-state-icon">🚗</div>
+        <h3>No se encontraron vehículos</h3>
+        <p>No hay autos que coincidan con los filtros seleccionados o el garaje está vacío.</p>
+        <button class="action-btn btn-add-car" style="margin-top: 1.25rem;" (click)="abrirModal()">
+          + Registrar Nuevo Auto
+        </button>
       </div>
     </ng-template>
   </div>
 </div>
 
-<!-- Modal Principal de Autos -->
-<div *ngIf="showModal" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center; z-index: 1000;" class="animate-fade-in">
-  <div class="glass-card" style="width: 100%; max-width: 500px; position: relative; max-height: 90vh; overflow-y: auto;">
-    <h3 style="margin-bottom: 1.5rem;">{{ editingId ? 'Editar Auto' : 'Registrar Auto' }}</h3>
+<!-- ======================================================= -->
+<!-- MODAL: GENERAR 10 AUTOS (ADMIN DESTINATARIO SELECTOR)    -->
+<!-- ======================================================= -->
+<div *ngIf="showGenerateModal" class="modal-overlay-backdrop" (click)="cerrarGenerateModal()">
+  <div class="modal-card-dialog modal-generate" (click)="$event.stopPropagation()">
     
+    <div class="dialog-header">
+      <div class="dialog-title-with-icon">
+        <div class="dialog-icon-badge generate-icon-bg">⚡</div>
+        <div>
+          <h3>Generar 10 Autos de Prueba</h3>
+          <span class="dialog-subtitle">Asignación exclusiva de flota por Administrador</span>
+        </div>
+      </div>
+      <button class="dialog-close-btn" (click)="cerrarGenerateModal()">×</button>
+    </div>
+
+    <div class="dialog-body-content">
+      <p class="dialog-explanation">
+        Selecciona a cuál de los usuarios registrados deseas asignarle el nuevo lote de <strong>10 autos generados aleatoriamente</strong>:
+      </p>
+
+      <!-- Selector de Usuario Destinatario -->
+      <div class="user-select-highlight-card">
+        <label class="form-control-label" style="color: #93c5fd; font-weight: 700;">
+          👤 Seleccionar Usuario Destinatario:
+        </label>
+        
+        <select [(ngModel)]="generateTargetUserId" name="generateTargetUserId" class="modal-form-select user-picker-select">
+          <option *ngFor="let u of usuarios" [value]="u.id">
+            👤 {{ u.nombre }} {{ u.apellido }} ({{ u.correo }}) — ID: {{ u.id }} {{ u.rol?.nombre === 'ROLE_ADMIN' ? '⭐ [ADMIN]' : '' }}
+          </option>
+        </select>
+      </div>
+
+      <div class="info-preview-banner">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: #60a5fa; flex-shrink: 0;">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="16" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>
+        <span>
+          Se crearán 10 registros con marcas y modelos del catálogo, placas únicas y colores surtidos, quedando vinculados automáticamente a la cuenta seleccionada.
+        </span>
+      </div>
+    </div>
+
+    <div class="dialog-footer-actions">
+      <button type="button" class="modal-btn btn-modal-cancel" (click)="cerrarGenerateModal()" [disabled]="generatingAutos">
+        Cancelar
+      </button>
+      <button type="button" class="modal-btn btn-modal-confirm-gen" (click)="confirmarGeneracion10Autos()" [disabled]="generatingAutos">
+        <span *ngIf="!generatingAutos">⚡ Generar 10 Autos Ahora</span>
+        <span *ngIf="generatingAutos">Generando vehículos...</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================= -->
+<!-- MODAL: REGISTRAR / EDITAR AUTO (CON SELECTOR ADMIN)     -->
+<!-- ======================================================= -->
+<div *ngIf="showModal" class="modal-overlay-backdrop" (click)="cerrarModal()">
+  <div class="modal-card-dialog modal-car-form" (click)="$event.stopPropagation()">
+    
+    <div class="dialog-header">
+      <div class="dialog-title-with-icon">
+        <div class="dialog-icon-badge car-icon-bg">🚘</div>
+        <div>
+          <h3>{{ editingId ? 'Editar Información del Vehículo' : 'Registrar Nuevo Vehículo' }}</h3>
+          <span class="dialog-subtitle">{{ editingId ? 'Modifica los datos o reasigna el propietario' : 'Ingresa las especificaciones del nuevo vehículo' }}</span>
+        </div>
+      </div>
+      <button class="dialog-close-btn" (click)="cerrarModal()">×</button>
+    </div>
+
     <form [formGroup]="autoForm" (ngSubmit)="guardarAuto()">
-      
-      <!-- Marca Selection -->
-      <div style="margin-bottom: 1rem;">
-        <label>Marca</label>
-        <select formControlName="marca" class="input-field" [ngClass]="{'error': autoForm.get('marca')?.invalid && autoForm.get('marca')?.touched}">
-          <option value="">Seleccione una marca...</option>
-          <option *ngFor="let m of marcas" [value]="m.nombre">{{ m.nombre }}</option>
-        </select>
-        <div *ngIf="autoForm.get('marca')?.invalid && autoForm.get('marca')?.touched" style="color: var(--danger); font-size: 0.875rem; margin-top: 0.25rem;">
-          La marca es requerida.
+      <div class="dialog-body-content">
+        
+        <!-- SECCIÓN ADMIN: ASIGNAR PROPIETARIO -->
+        <div *ngIf="isAdmin" class="user-select-highlight-card" style="margin-bottom: 1.25rem;">
+          <label class="form-control-label" style="color: #93c5fd; font-weight: 700;">
+            👤 Asignar a Usuario / Propietario (Admin):
+          </label>
+          <select formControlName="userId" class="modal-form-select user-picker-select">
+            <option [value]="null">Seleccione el propietario...</option>
+            <option *ngFor="let u of usuarios" [value]="u.id">
+              👤 {{ u.nombre }} {{ u.apellido }} ({{ u.correo }}) — ID: {{ u.id }} {{ u.rol?.nombre === 'ROLE_ADMIN' ? '⭐ [ADMIN]' : '' }}
+            </option>
+          </select>
+          <div class="help-text-muted">
+            Como Administrador puedes registrar el auto a nombre de cualquier usuario del sistema.
+          </div>
+        </div>
+
+        <!-- Marca & Modelo -->
+        <div class="form-row-two-cols">
+          <div class="form-group-item">
+            <label class="form-control-label">Marca *</label>
+            <select formControlName="marca" class="modal-form-select" [ngClass]="{'has-error': autoForm.get('marca')?.invalid && autoForm.get('marca')?.touched}">
+              <option value="">Seleccione una marca...</option>
+              <option *ngFor="let m of marcas" [value]="m.nombre">{{ m.nombre }}</option>
+            </select>
+            <span *ngIf="autoForm.get('marca')?.invalid && autoForm.get('marca')?.touched" class="error-msg-text">
+              La marca es obligatoria.
+            </span>
+          </div>
+
+          <div class="form-group-item">
+            <label class="form-control-label">Modelo *</label>
+            <select formControlName="modelo" class="modal-form-select" [ngClass]="{'has-error': autoForm.get('modelo')?.invalid && autoForm.get('modelo')?.touched}">
+              <option value="">Seleccione un modelo...</option>
+              <option *ngFor="let mod of modelos" [value]="mod.nombre">{{ mod.nombre }}</option>
+            </select>
+            <span *ngIf="autoForm.get('modelo')?.invalid && autoForm.get('modelo')?.touched" class="error-msg-text">
+              El modelo es obligatorio.
+            </span>
+          </div>
+        </div>
+
+        <!-- Año & Placa -->
+        <div class="form-row-two-cols">
+          <div class="form-group-item">
+            <label class="form-control-label">Año (4 dígitos) *</label>
+            <input type="text" formControlName="anio" class="modal-form-input" placeholder="Ej. 2024" [ngClass]="{'has-error': autoForm.get('anio')?.invalid && autoForm.get('anio')?.touched}">
+            <span *ngIf="autoForm.get('anio')?.invalid && autoForm.get('anio')?.touched" class="error-msg-text">
+              Ingrese 4 dígitos numéricos.
+            </span>
+          </div>
+
+          <div class="form-group-item">
+            <label class="form-control-label">Número de Placa *</label>
+            <input type="text" formControlName="placa" class="modal-form-input" placeholder="Ej. ABC-123" [ngClass]="{'has-error': autoForm.get('placa')?.invalid && autoForm.get('placa')?.touched}">
+            <span *ngIf="autoForm.get('placa')?.invalid && autoForm.get('placa')?.touched" class="error-msg-text">
+              La placa es obligatoria.
+            </span>
+          </div>
+        </div>
+
+        <!-- Color -->
+        <div class="form-group-item">
+          <label class="form-control-label">Color del Vehículo *</label>
+          <div style="display: flex; gap: 0.75rem; align-items: center; margin-bottom: 0.5rem;">
+            <input type="text" formControlName="color" class="modal-form-input" placeholder="Ej. Rojo Metálico, Negro, Blanco, Azul..." [ngClass]="{'has-error': autoForm.get('color')?.invalid && autoForm.get('color')?.touched}">
+          </div>
+          <!-- Quick Color Chips -->
+          <div class="quick-colors-list">
+            <button type="button" class="color-chip-btn" (click)="setColor('Rojo')"><span class="chip-circle" style="background:#ef4444;"></span> Rojo</button>
+            <button type="button" class="color-chip-btn" (click)="setColor('Azul')"><span class="chip-circle" style="background:#3b82f6;"></span> Azul</button>
+            <button type="button" class="color-chip-btn" (click)="setColor('Negro')"><span class="chip-circle" style="background:#0f172a; border-color:#64748b;"></span> Negro</button>
+            <button type="button" class="color-chip-btn" (click)="setColor('Blanco')"><span class="chip-circle" style="background:#f8fafc;"></span> Blanco</button>
+            <button type="button" class="color-chip-btn" (click)="setColor('Gris')"><span class="chip-circle" style="background:#64748b;"></span> Gris</button>
+            <button type="button" class="color-chip-btn" (click)="setColor('Plateado')"><span class="chip-circle" style="background:#cbd5e1;"></span> Plateado</button>
+          </div>
+        </div>
+
+        <!-- Upload Image -->
+        <div class="custom-file-upload-box">
+          <label class="form-control-label" style="margin-bottom: 0.25rem;">Foto del Vehículo (Opcional)</label>
+          <input type="file" accept="image/*" (change)="onFileSelected($event)" class="file-browse-input">
+          <div class="upload-file-hint">
+            {{ selectedFile ? '📁 Seleccionado: ' + selectedFile.name : 'Sube una imagen JPG o PNG para el catálogo visual.' }}
+          </div>
         </div>
       </div>
 
-      <!-- Modelo Selection -->
-      <div style="margin-bottom: 1rem;">
-        <label>Modelo</label>
-        <select formControlName="modelo" class="input-field" [ngClass]="{'error': autoForm.get('modelo')?.invalid && autoForm.get('modelo')?.touched}">
-          <option value="">Seleccione un modelo...</option>
-          <option *ngFor="let mod of modelos" [value]="mod.nombre">{{ mod.nombre }}</option>
-        </select>
-        <div *ngIf="autoForm.get('modelo')?.invalid && autoForm.get('modelo')?.touched" style="color: var(--danger); font-size: 0.875rem; margin-top: 0.25rem;">
-          El modelo es requerido.
-        </div>
-      </div>
-
-      <div style="margin-bottom: 1rem;">
-        <label>Año</label>
-        <input type="text" formControlName="anio" class="input-field" placeholder="Ej. 2022" [ngClass]="{'error': autoForm.get('anio')?.invalid && autoForm.get('anio')?.touched}">
-        <div *ngIf="autoForm.get('anio')?.invalid && autoForm.get('anio')?.touched" style="color: var(--danger); font-size: 0.875rem; margin-top: 0.25rem;">
-          Ingrese un año válido (4 dígitos).
-        </div>
-      </div>
-
-      <div style="margin-bottom: 1rem;">
-        <label>Número de Placa</label>
-        <input type="text" formControlName="placa" class="input-field" placeholder="Ej. ABC-123" [ngClass]="{'error': autoForm.get('placa')?.invalid && autoForm.get('placa')?.touched}">
-        <div *ngIf="autoForm.get('placa')?.invalid && autoForm.get('placa')?.touched" style="color: var(--danger); font-size: 0.875rem; margin-top: 0.25rem;">
-          La placa es requerida.
-        </div>
-      </div>
-
-      <div style="margin-bottom: 1.5rem;">
-        <label>Color</label>
-        <input type="text" formControlName="color" class="input-field" placeholder="Ej. Rojo" [ngClass]="{'error': autoForm.get('color')?.invalid && autoForm.get('color')?.touched}">
-      </div>
-
-      <!-- Subida de Imagen -->
-      <div style="margin-bottom: 2rem; padding: 1rem; border: 1px dashed rgba(255,255,255,0.2); border-radius: 8px;">
-        <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Foto del Auto (Opcional)</label>
-        <input type="file" accept="image/*" (change)="onFileSelected($event)" style="color: white;">
-        <small style="display: block; color: var(--text-secondary); margin-top: 0.5rem;">Sube una imagen para mostrar en el catálogo.</small>
-      </div>
-
-      <div style="display: flex; justify-content: flex-end; gap: 1rem;">
-        <button type="button" class="btn btn-secondary" (click)="cerrarModal()">Cancelar</button>
-        <button type="submit" class="btn btn-primary" [disabled]="autoForm.invalid || loading">
-          {{ loading ? 'Guardando...' : 'Guardar Auto' }}
+      <div class="dialog-footer-actions">
+        <button type="button" class="modal-btn btn-modal-cancel" (click)="cerrarModal()">Cancelar</button>
+        <button type="submit" class="modal-btn btn-modal-save" [disabled]="autoForm.invalid || loading">
+          {{ loading ? 'Guardando...' : (editingId ? 'Actualizar Auto' : 'Guardar Auto') }}
         </button>
       </div>
     </form>
   </div>
 </div>
 
-<!-- Modal Gestion de Catálogo -->
-<div *ngIf="showCatalogModal" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center; z-index: 1001;" class="animate-fade-in">
-  <div class="glass-card" style="width: 100%; max-width: 600px; position: relative; max-height: 90vh; overflow-y: auto;">
-    <h3 style="margin-bottom: 1.5rem;">Gestionar Catálogo</h3>
+<!-- ======================================================= -->
+<!-- MODAL: GESTIÓN DE CATÁLOGO (MARCAS Y MODELOS)           -->
+<!-- ======================================================= -->
+<div *ngIf="showCatalogModal" class="modal-overlay-backdrop" (click)="cerrarCatalogModal()">
+  <div class="modal-card-dialog modal-catalog" (click)="$event.stopPropagation()">
     
-    <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
-      <!-- Agregar Marca -->
-      <div style="flex: 1; min-width: 250px; background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px;">
-        <h4>Agregar Marca</h4>
-        <form [formGroup]="nuevaMarcaForm" (ngSubmit)="guardarNuevaMarca()">
-          <div style="margin-bottom: 1rem;">
-            <label>Nombre de Marca</label>
-            <input type="text" formControlName="nombre" class="input-field" placeholder="Ej. Chevrolet">
-          </div>
-          <button type="submit" class="btn btn-primary" [disabled]="nuevaMarcaForm.invalid" style="width: 100%;">Añadir Marca</button>
-        </form>
+    <div class="dialog-header">
+      <div class="dialog-title-with-icon">
+        <div class="dialog-icon-badge catalog-icon-bg">📚</div>
+        <div>
+          <h3>Gestión de Catálogo de Marcas y Modelos</h3>
+          <span class="dialog-subtitle">Administra los valores disponibles en el sistema</span>
+        </div>
       </div>
+      <button class="dialog-close-btn" (click)="cerrarCatalogModal()">×</button>
+    </div>
 
-      <!-- Agregar Modelo -->
-      <div style="flex: 1; min-width: 250px; background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px;">
-        <h4>Agregar Modelo</h4>
-        <form [formGroup]="nuevoModeloForm" (ngSubmit)="guardarNuevoModelo()">
-          <div style="margin-bottom: 1rem;">
-            <label>Seleccionar Marca</label>
-            <select formControlName="marca" class="input-field">
-              <option [ngValue]="null">Seleccione...</option>
-              <option *ngFor="let m of marcas" [value]="m.id">{{ m.nombre }}</option>
-            </select>
+    <div class="dialog-body-content">
+      <div class="catalog-cards-grid">
+        
+        <!-- Nueva Marca -->
+        <div class="catalog-sub-card">
+          <div class="sub-card-header">
+            <h4>🏷️ Nueva Marca</h4>
           </div>
-          <div style="margin-bottom: 1rem;">
-            <label>Nombre de Modelo</label>
-            <input type="text" formControlName="nombre" class="input-field" placeholder="Ej. Spark">
+          <form [formGroup]="nuevaMarcaForm" (ngSubmit)="guardarNuevaMarca()">
+            <div class="form-group-item">
+              <label class="form-control-label">Nombre de Marca</label>
+              <input type="text" formControlName="nombre" class="modal-form-input" placeholder="Ej. Volvo, Porsche...">
+            </div>
+            <button type="submit" class="modal-btn btn-modal-save" [disabled]="nuevaMarcaForm.invalid" style="width: 100%; margin-top: 1rem;">
+              + Añadir Marca
+            </button>
+          </form>
+        </div>
+
+        <!-- Nuevo Modelo -->
+        <div class="catalog-sub-card">
+          <div class="sub-card-header">
+            <h4>🚗 Nuevo Modelo</h4>
           </div>
-          <button type="submit" class="btn btn-primary" [disabled]="nuevoModeloForm.invalid" style="width: 100%;">Añadir Modelo</button>
-        </form>
+          <form [formGroup]="nuevoModeloForm" (ngSubmit)="guardarNuevoModelo()">
+            <div class="form-group-item">
+              <label class="form-control-label">Marca Asociada</label>
+              <select formControlName="marca" class="modal-form-select">
+                <option [ngValue]="null">Seleccione la marca...</option>
+                <option *ngFor="let m of marcas" [value]="m.id">{{ m.nombre }}</option>
+              </select>
+            </div>
+            <div class="form-group-item" style="margin-top: 0.75rem;">
+              <label class="form-control-label">Nombre de Modelo</label>
+              <input type="text" formControlName="nombre" class="modal-form-input" placeholder="Ej. XC90, 911 Carrera...">
+            </div>
+            <button type="submit" class="modal-btn btn-modal-save" [disabled]="nuevoModeloForm.invalid" style="width: 100%; margin-top: 1rem;">
+              + Añadir Modelo
+            </button>
+          </form>
+        </div>
+
       </div>
     </div>
 
-    <div style="display: flex; justify-content: flex-end; margin-top: 2rem;">
-      <button type="button" class="btn btn-secondary" (click)="cerrarCatalogModal()">Cerrar</button>
+    <div class="dialog-footer-actions">
+      <button type="button" class="modal-btn btn-modal-cancel" (click)="cerrarCatalogModal()">Cerrar</button>
     </div>
   </div>
 </div>

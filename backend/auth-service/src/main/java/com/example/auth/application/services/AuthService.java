@@ -52,4 +52,9 @@ public class AuthService implements AuthUseCase {
 
         return tokenPort.generarToken(usuario);
     }
+
+    @Override
+    public java.util.List<User> obtenerUsuarios() {
+        return userRepositoryPort.buscarTodos();
+    }
 }
