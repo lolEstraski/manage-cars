@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { AutoService } from './auto.service';
-import { Auto, PageResponse } from '../models/auto.model';
+import { Auto, Page } from '../models/auto.model';
 
 describe('AutoService', () => {
   let service: AutoService;
@@ -63,12 +63,15 @@ describe('AutoService', () => {
   });
 
   it('debe obtener todos los autos paginados', () => {
-    const mockPage: PageResponse<Auto> = {
+    const mockPage: Page<Auto> = {
       content: [{ id: 1, marca: 'Audi', modelo: 'A3', anio: '2024', placa: 'XYZ-999', color: 'Negro' }],
       totalElements: 1,
       totalPages: 1,
       size: 10,
-      number: 0
+      number: 0,
+      first: true,
+      last: true,
+      empty: false
     };
 
     service.obtenerTodos(0, 10).subscribe(page => {

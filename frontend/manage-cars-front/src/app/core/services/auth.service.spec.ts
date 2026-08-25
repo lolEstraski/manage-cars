@@ -33,7 +33,7 @@ describe('AuthService', () => {
   it('debe registrar un usuario correctamente', () => {
     const mockUser: Usuario = { nombre: 'Carlos', apellido: 'Gomez', correo: 'carlos@test.com', contrasena: '123456' };
 
-    service.registrar(mockUser).subscribe(user => {
+    service.registro(mockUser).subscribe(user => {
       expect(user.correo).toBe('carlos@test.com');
     });
 
