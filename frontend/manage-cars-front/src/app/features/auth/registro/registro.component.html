@@ -1,0 +1,39 @@
+<div class="container animate-fade-in" style="display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 2rem 0;">
+  <div class="glass-card" style="width: 100%; max-width: 400px;">
+    <h2 style="text-align: center; margin-bottom: 2rem;">Crear Cuenta</h2>
+    
+    <div *ngIf="error" style="background: rgba(239, 68, 68, 0.1); color: var(--danger); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; text-align: center;">
+      {{ error }}
+    </div>
+
+    <form [formGroup]="registroForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label class="form-label" for="nombre">Nombre</label>
+        <input id="nombre" type="text" class="form-input" formControlName="nombre">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="apellido">Apellido</label>
+        <input id="apellido" type="text" class="form-input" formControlName="apellido">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="correo">Correo Electrónico</label>
+        <input id="correo" type="email" class="form-input" formControlName="correo">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="contrasena">Contraseña</label>
+        <input id="contrasena" type="password" class="form-input" formControlName="contrasena">
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;" [disabled]="registroForm.invalid || loading">
+        {{ loading ? 'Registrando...' : 'Registrar' }}
+      </button>
+    </form>
+
+    <div style="text-align: center; margin-top: 1.5rem;">
+      <p style="font-size: 0.875rem;">¿Ya tienes cuenta? <a routerLink="/login" style="color: var(--accent-primary); text-decoration: none; font-weight: 500;">Inicia Sesión</a></p>
+    </div>
+  </div>
+</div>

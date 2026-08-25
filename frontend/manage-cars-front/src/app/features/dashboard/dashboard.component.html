@@ -1,0 +1,202 @@
+<nav class="navbar">
+  <div class="navbar-brand">
+    MisAutos App <span *ngIf="isAdmin" class="badge" style="background: var(--danger); font-size: 0.7rem; margin-left: 0.5rem; padding: 2px 6px;">ADMIN</span>
+  </div>
+  <button class="btn btn-secondary" (click)="logout()">Cerrar Sesión</button>
+</nav>
+
+<div class="container animate-fade-in" style="padding-top: 2rem; padding-bottom: 2rem;">
+  
+  <!-- Header & Actions -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
+    <h2>{{ isAdmin ? 'Panel de Administrador (Todos los Autos)' : 'Dashboard' }}</h2>
+    <div style="display: flex; gap: 1rem;">
+      <button *ngIf="isAdmin" class="btn btn-secondary" (click)="abrirCatalogModal()">Gestionar Catálogo</button>
+      <button class="btn btn-secondary" (click)="precargar10Autos()">Generar 10 Autos</button>
+      <button class="btn btn-primary" (click)="abrirModal()">+ Añadir Auto</button>
+    </div>
+  </div>
+
+  <!-- Search & Filters Bar -->
+  <div class="glass-card" style="margin-bottom: 2rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+    <div style="flex: 1; min-width: 200px;">
+      <label>Buscar por Placa</label>
+      <input type="text" class="input-field" placeholder="Ej. ABC-123" (keyup)="actualizarFiltros($event, 'placa')">
+    </div>
+    <div style="flex: 1; min-width: 200px;">
+      <label>Buscar por Modelo</label>
+      <input type="text" class="input-field" placeholder="Ej. Corolla" (keyup)="actualizarFiltros($event, 'modelo')">
+    </div>
+    <div style="flex: 1; min-width: 200px;">
+      <label>Filtrar por Marca</label>
+      <select class="input-field" (change)="actualizarFiltros($event, 'marca')">
+        <option value="">Todas las marcas</option>
+        <option *ngFor="let m of marcas" [value]="m.nombre">{{m.nombre}}</option>
+      </select>
+    </div>
+    <div style="flex: 1; min-width: 200px;">
+      <label>Filtrar por Año</label>
+      <input type="text" class="input-field" placeholder="Ej. 2022" (keyup)="actualizarFiltros($event, 'anio')">
+    </div>
+  </div>
+
+  <div class="glass-card" style="overflow-x: auto;">
+    <table class="data-table" *ngIf="autosFiltrados.length > 0; else noData">
+      <thead>
+        <tr>
+          <th>Imagen</th>
+          <th>Marca</th>
+          <th>Modelo</th>
+          <th>Año</th>
+          <th>Placa</th>
+          <th>Color</th>
+          <th *ngIf="isAdmin">Propietario ID</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let auto of autosFiltrados">
+          <td>
+            <img *ngIf="auto.imagenUrl" [src]="'http://localhost:8081' + auto.imagenUrl" alt="Auto" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;">
+            <div *ngIf="!auto.imagenUrl" style="width: 50px; height: 50px; background: rgba(255,255,255,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: #888;">N/A</div>
+          </td>
+          <td style="font-weight: 500;">{{ auto.marca }}</td>
+          <td>{{ auto.modelo }}</td>
+          <td>{{ auto.anio }}</td>
+          <td><span style="background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 4px; font-family: monospace;">{{ auto.placa }}</span></td>
+          <td>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <div [style.background]="auto.color" style="width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2);"></div>
+              {{ auto.color }}
+            </div>
+          </td>
+          <td *ngIf="isAdmin">{{ auto.userId }}</td>
+          <td>
+            <button class="btn btn-secondary" style="padding: 0.25rem 0.75rem; font-size: 0.875rem; margin-right: 0.5rem;" (click)="abrirModal(auto)">Editar</button>
+            <button class="btn btn-danger" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;" (click)="eliminarAuto(auto.id)">Eliminar</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <ng-template #noData>
+      <div style="text-align: center; padding: 3rem 0; color: var(--text-secondary);">
+        <p>No se encontraron autos.</p>
+        <button class="btn btn-primary" style="margin-top: 1rem;" (click)="abrirModal()">Añadir un auto</button>
+      </div>
+    </ng-template>
+  </div>
+</div>
+
+<!-- Modal Principal de Autos -->
+<div *ngIf="showModal" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center; z-index: 1000;" class="animate-fade-in">
+  <div class="glass-card" style="width: 100%; max-width: 500px; position: relative; max-height: 90vh; overflow-y: auto;">
+    <h3 style="margin-bottom: 1.5rem;">{{ editingId ? 'Editar Auto' : 'Registrar Auto' }}</h3>
+    
+    <form [formGroup]="autoForm" (ngSubmit)="guardarAuto()">
+      
+      <!-- Marca Selection -->
+      <div style="margin-bottom: 1rem;">
+        <label>Marca</label>
+        <select formControlName="marca" class="input-field" [ngClass]="{'error': autoForm.get('marca')?.invalid && autoForm.get('marca')?.touched}">
+          <option value="">Seleccione una marca...</option>
+          <option *ngFor="let m of marcas" [value]="m.nombre">{{ m.nombre }}</option>
+        </select>
+        <div *ngIf="autoForm.get('marca')?.invalid && autoForm.get('marca')?.touched" style="color: var(--danger); font-size: 0.875rem; margin-top: 0.25rem;">
+          La marca es requerida.
+        </div>
+      </div>
+
+      <!-- Modelo Selection -->
+      <div style="margin-bottom: 1rem;">
+        <label>Modelo</label>
+        <select formControlName="modelo" class="input-field" [ngClass]="{'error': autoForm.get('modelo')?.invalid && autoForm.get('modelo')?.touched}">
+          <option value="">Seleccione un modelo...</option>
+          <option *ngFor="let mod of modelos" [value]="mod.nombre">{{ mod.nombre }}</option>
+        </select>
+        <div *ngIf="autoForm.get('modelo')?.invalid && autoForm.get('modelo')?.touched" style="color: var(--danger); font-size: 0.875rem; margin-top: 0.25rem;">
+          El modelo es requerido.
+        </div>
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <label>Año</label>
+        <input type="text" formControlName="anio" class="input-field" placeholder="Ej. 2022" [ngClass]="{'error': autoForm.get('anio')?.invalid && autoForm.get('anio')?.touched}">
+        <div *ngIf="autoForm.get('anio')?.invalid && autoForm.get('anio')?.touched" style="color: var(--danger); font-size: 0.875rem; margin-top: 0.25rem;">
+          Ingrese un año válido (4 dígitos).
+        </div>
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <label>Número de Placa</label>
+        <input type="text" formControlName="placa" class="input-field" placeholder="Ej. ABC-123" [ngClass]="{'error': autoForm.get('placa')?.invalid && autoForm.get('placa')?.touched}">
+        <div *ngIf="autoForm.get('placa')?.invalid && autoForm.get('placa')?.touched" style="color: var(--danger); font-size: 0.875rem; margin-top: 0.25rem;">
+          La placa es requerida.
+        </div>
+      </div>
+
+      <div style="margin-bottom: 1.5rem;">
+        <label>Color</label>
+        <input type="text" formControlName="color" class="input-field" placeholder="Ej. Rojo" [ngClass]="{'error': autoForm.get('color')?.invalid && autoForm.get('color')?.touched}">
+      </div>
+
+      <!-- Subida de Imagen -->
+      <div style="margin-bottom: 2rem; padding: 1rem; border: 1px dashed rgba(255,255,255,0.2); border-radius: 8px;">
+        <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Foto del Auto (Opcional)</label>
+        <input type="file" accept="image/*" (change)="onFileSelected($event)" style="color: white;">
+        <small style="display: block; color: var(--text-secondary); margin-top: 0.5rem;">Sube una imagen para mostrar en el catálogo.</small>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+        <button type="button" class="btn btn-secondary" (click)="cerrarModal()">Cancelar</button>
+        <button type="submit" class="btn btn-primary" [disabled]="autoForm.invalid || loading">
+          {{ loading ? 'Guardando...' : 'Guardar Auto' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Gestion de Catálogo -->
+<div *ngIf="showCatalogModal" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center; z-index: 1001;" class="animate-fade-in">
+  <div class="glass-card" style="width: 100%; max-width: 600px; position: relative; max-height: 90vh; overflow-y: auto;">
+    <h3 style="margin-bottom: 1.5rem;">Gestionar Catálogo</h3>
+    
+    <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+      <!-- Agregar Marca -->
+      <div style="flex: 1; min-width: 250px; background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px;">
+        <h4>Agregar Marca</h4>
+        <form [formGroup]="nuevaMarcaForm" (ngSubmit)="guardarNuevaMarca()">
+          <div style="margin-bottom: 1rem;">
+            <label>Nombre de Marca</label>
+            <input type="text" formControlName="nombre" class="input-field" placeholder="Ej. Chevrolet">
+          </div>
+          <button type="submit" class="btn btn-primary" [disabled]="nuevaMarcaForm.invalid" style="width: 100%;">Añadir Marca</button>
+        </form>
+      </div>
+
+      <!-- Agregar Modelo -->
+      <div style="flex: 1; min-width: 250px; background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px;">
+        <h4>Agregar Modelo</h4>
+        <form [formGroup]="nuevoModeloForm" (ngSubmit)="guardarNuevoModelo()">
+          <div style="margin-bottom: 1rem;">
+            <label>Seleccionar Marca</label>
+            <select formControlName="marca" class="input-field">
+              <option [ngValue]="null">Seleccione...</option>
+              <option *ngFor="let m of marcas" [value]="m.id">{{ m.nombre }}</option>
+            </select>
+          </div>
+          <div style="margin-bottom: 1rem;">
+            <label>Nombre de Modelo</label>
+            <input type="text" formControlName="nombre" class="input-field" placeholder="Ej. Spark">
+          </div>
+          <button type="submit" class="btn btn-primary" [disabled]="nuevoModeloForm.invalid" style="width: 100%;">Añadir Modelo</button>
+        </form>
+      </div>
+    </div>
+
+    <div style="display: flex; justify-content: flex-end; margin-top: 2rem;">
+      <button type="button" class="btn btn-secondary" (click)="cerrarCatalogModal()">Cerrar</button>
+    </div>
+  </div>
+</div>

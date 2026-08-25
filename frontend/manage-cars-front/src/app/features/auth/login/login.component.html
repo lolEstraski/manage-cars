@@ -1,0 +1,41 @@
+<div class="container animate-fade-in" style="display: flex; align-items: center; justify-content: center; min-height: 100vh;">
+  <div class="glass-card" style="width: 100%; max-width: 400px;">
+    <h2 style="text-align: center; margin-bottom: 2rem;">Inicia Sesión</h2>
+    
+    <div *ngIf="error" style="background: rgba(239, 68, 68, 0.1); color: var(--danger); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; text-align: center;">
+      {{ error }}
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label class="form-label" for="correo">Correo Electrónico</label>
+        <input 
+          id="correo" 
+          type="email" 
+          class="form-input" 
+          formControlName="correo" 
+          placeholder="tu@correo.com"
+        >
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="contrasena">Contraseña</label>
+        <input 
+          id="contrasena" 
+          type="password" 
+          class="form-input" 
+          formControlName="contrasena" 
+          placeholder="••••••••"
+        >
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;" [disabled]="loginForm.invalid || loading">
+        {{ loading ? 'Ingresando...' : 'Entrar' }}
+      </button>
+    </form>
+
+    <div style="text-align: center; margin-top: 1.5rem;">
+      <p style="font-size: 0.875rem;">¿No tienes cuenta? <a routerLink="/registro" style="color: var(--accent-primary); text-decoration: none; font-weight: 500;">Regístrate</a></p>
+    </div>
+  </div>
+</div>
