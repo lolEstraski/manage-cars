@@ -1,4 +1,4 @@
-# 🚗 Manage Cars - Sistema de Gestión de Flotas y Vehículos
+#  Manage Cars - Sistema de Gestión de Flotas y Vehículos
 
 Sistema full-stack para la administración, registro y control de vehículos basado en una **arquitectura de microservicios** desacoplada, siguiendo los principios de la **Arquitectura Hexagonal (Puertos y Adaptadores)** y una interfaz moderna con diseño *Glassmorphism Dark*.
 
@@ -27,26 +27,26 @@ Sistema full-stack para la administración, registro y control de vehículos bas
 
 ---
 
-## 📌 Funcionalidades Principales
+##  Funcionalidades Principales
 
-1. **🔐 Autenticación y Control de Accesos (RBAC)**:
+1. ** Autenticación y Control de Accesos (RBAC)**:
    - Registro e inicio de sesión con tokens JWT.
    - Roles diferenciados: `ROLE_ADMIN` (Administrador) y `ROLE_USER` (Usuario Estándar).
-2. **🚘 Gestión de Vehículos**:
+2. ** Gestión de Vehículos**:
    - **Mi Garaje**: Los usuarios estándar administran sus propios vehículos.
    - **Panel de Flota (Admin)**: El administrador visualiza todos los autos, con ordenamiento del más reciente al más antiguo.
    - **Asignación a Usuarios**: El administrador puede registrar o generar autos y asignarlos directamente a cualquier usuario del sistema.
-   - **⚡ Generador de Lote (10 Autos)**: Genera 10 autos aleatorios con marcas, modelos, placas únicas y colores surtidos vinculados al usuario elegido.
+   - ** Generador de Lote (10 Autos)**: Genera 10 autos aleatorios con marcas, modelos, placas únicas y colores surtidos vinculados al usuario elegido.
    - **Carga de Imágenes**: Soporte para subir fotografías de los vehículos.
-3. **📚 Catálogo de Marcas y Modelos**:
+3. **Catálogo de Marcas y Modelos**:
    - Catálogo precargado con 14 marcas (Toyota, BMW, Mercedes-Benz, Audi, Mazda, Tesla, Volvo, etc.) y decenas de modelos.
    - Gestión en tiempo real para crear nuevas marcas y asociarles nuevos modelos.
-4. **🔍 Filtros en Tiempo Real**:
+4. **Filtros en Tiempo Real**:
    - Búsqueda instantánea por placa, modelo, marca, año y usuario propietario.
 
 ---
 
-## 🐳 1. Cómo Ejecutar con Docker (Recomendado)
+## 1. Cómo Ejecutar con Docker (Recomendado)
 
 La forma más rápida y sencilla de levantar toda la plataforma (Base de Datos + Microservicios + Frontend) es usando Docker Compose:
 
@@ -89,7 +89,7 @@ Deberás ver los 4 contenedores activos:
 
 ---
 
-## 💻 2. Cómo Ejecutar en Local (Desarrollo)
+## 2. Cómo Ejecutar en Local (Desarrollo)
 
 Si prefieres ejecutar cada servicio directamente en tu máquina:
 
@@ -98,7 +98,7 @@ Si prefieres ejecutar cada servicio directamente en tu máquina:
 - Node.js 18+ y npm instalados.
 - Microsoft SQL Server 2022 corriendo en `localhost:1433` (con usuario `sa` y contraseña `YourStrong@Passw0rd`).
 
-> **💡 Consejo**: Puedes levantar únicamente la base de datos con Docker ejecutando:
+> **Consejo**: Puedes levantar únicamente la base de datos con Docker ejecutando:
 > ```bash
 > docker compose up -d sqlserver db-init
 > ```
@@ -142,7 +142,7 @@ npm start
 
 ---
 
-## 👥 Cuentas de Prueba Preconfiguradas
+##  Cuentas de Prueba Preconfiguradas
 
 La base de datos incluye los siguientes usuarios de prueba listos para usar:
 
@@ -155,7 +155,7 @@ La base de datos incluye los siguientes usuarios de prueba listos para usar:
 
 ---
 
-## 📮 Pruebas de API con Postman
+##  Pruebas de API con Postman
 
 El repositorio incluye la colección completa para Postman en el archivo:
 📄 **`ManageCars_Postman_Collection.json`**
@@ -169,7 +169,7 @@ El repositorio incluye la colección completa para Postman en el archivo:
 
 ---
 
-## 🧪 3. Ejecución de Pruebas Automatizadas (Testing Suite)
+## 3. Ejecución de Pruebas Automatizadas (Testing Suite)
 
 La plataforma cuenta con una suite completa de **pruebas unitarias y de integración** para los servicios del backend y frontend:
 
@@ -202,7 +202,7 @@ npm test -- --watch=false --browsers=ChromeHeadless
 
 ---
 
-## 📂 Estructura del Repositorio
+## Estructura del Repositorio
 
 ```text
 manage-cars/
